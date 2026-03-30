@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -22,7 +22,7 @@
         .header {
             padding: 15px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.05);
             letter-spacing: 3px; font-size: 0.7rem; font-weight: bold; color: var(--accent);
-            background: white;
+            background: white; position: sticky; top: 0; z-index: 100;
         }
 
         #app { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
@@ -34,6 +34,211 @@
 
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .day-grid { grid-template-columns: repeat(7, 1fr); }
+
+        button {
+            background: var(--glass); backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3); padding: 15px;
+            border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 0.9rem;
+        }
+        button:active { transform: scale(0.98); background: #fff; }
+        
+        .btn-confirm { background: #e9edc9 !important; grid-column: span 3; font-weight: bold; margin-top: 10px; width: 100%; }
+        .btn-back { background: none; border: none; color: var(--accent); text-decoration: underline; margin-bottom: 20px; font-size: 0.8rem; cursor: pointer; }
+
+        input {
+            width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd;
+            background: var(--glass); box-sizing: border-box; margin-bottom: 10px;
+        }
+
+        .event-card {
+            background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid var(--accent);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .event-info { flex: 1; margin-right: 10px; }
+        .remark-text { font-size: 0.8rem; color: #777; display: block; margin-top: 4px; font-style: italic; }
+
+        .delete-btn { color: var(--error); font-size: 0.7rem; cursor: pointer; border: 1px solid var(--error); padding: 8px; border-radius: 5px; min-width: 50px; text-align: center; }
+
+        .nav-bar { padding: 15px; display: flex; justify-content: space-around; border-top: 1px solid rgba(0,0,0,0.05); background: white; }
+        .nav-btn { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+
+<div class="header">NP | NOUSHIN PROGRAMS</div>
+
+<div id="app">
+    <div class="step active" id="step1">
+        <h1>Select Event</h1>
+        <div class="grid">
+            <button onclick="nextStep(2, 'event', 'Marriage')">💍 Marriage</button>
+            <button onclick="nextStep(2, 'event', 'Meeting')">💼 Meeting</button>
+            <button onclick="nextStep(2, 'event', 'Function')">🎉 Function</button>
+        </div>
+    </div>
+
+    <div class="step" id="step2">
+        <div class="btn-back" onclick="showStep(1)">← Change Event</div>
+        <h1>Which Year?</h1>
+        <div class="grid" id="yearGrid"></div>
+    </div>
+
+    <div class="step" id="step3">
+        <div class="btn-back" onclick="showStep(2)">← Change Year</div>
+        <h1>Select Month</h1>
+        <div class="grid" id="monthGrid"></div>
+    </div>
+
+    <div class="step" id="step4">
+        <div class="btn-back" onclick="showStep(3)">← Change Month</div>
+        <h1>Select Date</h1>
+        <div class="grid day-grid" id="dayGrid"></div>
+    </div>
+
+    <div class="step" id="step5">
+        <div class="btn-back" onclick="showStep(4)">← Change Date</div>
+        <h1>What Time?</h1>
+        <div class="grid">
+            <button onclick="handleTime('09:00')">🌅 Morning</button>
+            <button onclick="handleTime('13:00')">☀️ Noon</button>
+            <button onclick="handleTime('18:00')">🌇 Evening</button>
+            <button onclick="handleTime('21:00')">🌙 Night</button>
+            <div style="grid-column: span 3; margin-top: 10px; text-align: center;">
+                <p style="font-size: 0.8rem; margin-bottom: 5px;">Or set exact time:</p>
+                <input type="time" id="exactTime">
+                <button class="btn-confirm" onclick="handleTime(document.getElementById('exactTime').value)">Confirm Time</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="step" id="step6">
+        <div class="btn-back" onclick="showStep(5)">← Change Time</div>
+        <h1>Final Remarks</h1>
+        <input type="text" id="remarkInput" placeholder="e.g. John's Marriage at Balussery...">
+        <button class="btn-confirm" onclick="finalize()">Confirm & Sync 🔔</button>
+    </div>
+
+    <div class="view" id="eventListView">
+        <h1>My Programs</h1>
+        <div id="listContainer"></div>
+        <button class="btn-confirm" onclick="location.reload()">Back to Home</button>
+    </div>
+</div>
+
+<div class="nav-bar">
+    <div class="nav-btn" onclick="location.reload()">+ New</div>
+    <div class="nav-btn" onclick="showEvents()">📅 My Programs</div>
+</div>
+
+<script>
+    let data = { event: '', year: '', month: '', day: '', time: '', remark: '' };
+
+    // Setup Dynamic Years
+    const currentYear = new Date().getFullYear();
+    const yearGrid = document.getElementById('yearGrid');
+    for (let i = 0; i < 3; i++) {
+        let y = currentYear + i;
+        yearGrid.innerHTML += `<button style="grid-column: span 3" onclick="nextStep(3, 'year', ${y})">${y}</button>`;
+    }
+
+    // Setup Months
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthGrid = document.getElementById('monthGrid');
+    months.forEach((m, idx) => {
+        monthGrid.innerHTML += `<button onclick="setupDays(${idx + 1})">${m}</button>`;
+    });
+
+    function setupDays(monthNum) {
+        data.month = monthNum;
+        const dayGrid = document.getElementById('dayGrid');
+        dayGrid.innerHTML = '';
+        const daysInMonth = new Date(data.year, monthNum, 0).getDate();
+        for (let d = 1; d <= daysInMonth; d++) {
+            dayGrid.innerHTML += `<button onclick="nextStep(5, 'day', ${d})">${d}</button>`;
+        }
+        showStep(4);
+    }
+
+    function nextStep(stepNum, key, value) {
+        data[key] = value;
+        showStep(stepNum);
+    }
+
+    function showStep(num) {
+        document.querySelectorAll('.step, .view').forEach(s => s.classList.remove('active'));
+        document.getElementById('step' + num).classList.add('active');
+    }
+
+    function handleTime(timeVal) {
+        if (!timeVal) { alert("Please select a time!"); return; }
+        
+        // PAST DATE CHECK
+        const selectedDate = new Date(data.year, data.month - 1, data.day, timeVal.split(':')[0], timeVal.split(':')[1]);
+        if (selectedDate < new Date()) {
+            alert("⚠️ Error: You cannot select a date or time in the past!");
+            return;
+        }
+        
+        data.time = timeVal;
+        showStep(6);
+    }
+
+    function finalize() {
+        data.remark = document.getElementById('remarkInput').value || "No detailed remark";
+        let list = JSON.parse(localStorage.getItem('np_events')) || [];
+        list.push({...data});
+        localStorage.setItem('np_events', JSON.stringify(list));
+
+        const y = data.year, m = data.month.toString().padStart(2, '0'), d = data.day.toString().padStart(2, '0');
+        const timeStr = data.time.replace(':', '') + "00";
+        const title = `${data.event}: ${data.remark}`;
+        const dateRange = `${y}${m}${d}T${timeStr}/${y}${m}${d}T${parseInt(timeStr)+10000}`;
+
+        const googleUrl = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dateRange}&details=${encodeURIComponent(data.remark)}`;
+        window.open(googleUrl, '_blank');
+        location.reload(); 
+    }
+
+    function showEvents() {
+        document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+        document.getElementById('eventListView').classList.add('active');
+        renderList();
+    }
+
+    function renderList() {
+        const container = document.getElementById('listContainer');
+        const list = JSON.parse(localStorage.getItem('np_events')) || [];
+        container.innerHTML = list.length ? '' : '<p style="text-align:center; opacity:0.5;">No upcoming programs.</p>';
+        
+        list.forEach((ev, idx) => {
+            container.innerHTML += `
+                <div class="event-card">
+                    <div class="event-info">
+                        <strong>${ev.event}</strong><br>
+                        <small>${ev.day}/${ev.month}/${ev.year} at ${ev.time}</small>
+                        <span class="remark-text">${ev.remark}</span>
+                    </div>
+                    <div class="delete-btn" onclick="deleteEvent(${idx})">Delete</div>
+                </div>
+            `;
+        });
+    }
+
+    function deleteEvent(index) {
+        if (confirm("🚨 Are you sure you want to delete this program from your list?\n\n(Note: This will not remove it from your Google Calendar app.)")) {
+            let list = JSON.parse(localStorage.getItem('np_events'));
+            list.splice(index, 1);
+            localStorage.setItem('np_events', JSON.stringify(list));
+            renderList();
+        }
+    }
+</script>
+</body>
+</html>
 
         button {
             background: var(--glass); backdrop-filter: blur(10px);
