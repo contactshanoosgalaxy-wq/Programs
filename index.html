@@ -53,18 +53,23 @@
         .container { padding: 20px; max-width: 460px; margin: 0 auto; padding-bottom: 100px; }
         .hidden { display: none !important; }
 
-        /* SEARCH BAR */
-        .search-container { margin-bottom: 15px; }
+        /* BANNER */
+        .banner {
+            background: var(--accentSoft); color: var(--accent); padding: 15px;
+            border-radius: 20px; margin-bottom: 20px; border: 1px dashed var(--accent);
+            font-size: 0.9rem; display: flex; align-items: center; gap: 10px;
+        }
+
+        /* SEARCH & FILTER */
         .search-input {
-            width: 100%; padding: 12px 20px; border-radius: 30px;
+            width: 100%; padding: 12px 20px; border-radius: 30px; margin-bottom: 15px;
             border: 1.5px solid var(--cardBorder); background: var(--card);
             color: var(--text); font-family: 'Quicksand'; outline: none; box-sizing: border-box;
         }
 
-        /* FILTER CHIPS */
         .filter-scroll {
             display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px;
-            scrollbar-width: none; -ms-overflow-style: none;
+            scrollbar-width: none;
         }
         .filter-scroll::-webkit-scrollbar { display: none; }
         .chip {
@@ -75,18 +80,15 @@
         .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
 
         .event-card {
-            background: var(--card); border-radius: 20px; padding: 18px;
+            background: var(--card); border-radius: 22px; padding: 18px;
             margin-bottom: 12px; border: 1px solid var(--cardBorder);
             box-shadow: var(--shadow); display: flex; align-items: center; gap: 15px;
             animation: slideUp 0.4s ease forwards;
         }
-
         @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-        .badge { padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; }
-
         .fab {
-            position: fixed; bottom: 30px; right: 24px; width: 60px; height: 60px;
+            position: fixed; bottom: 30px; right: 24px; width: 62px; height: 62px;
             border-radius: 50%; background: var(--accent); color: white;
             display: flex; align-items: center; justify-content: center;
             font-size: 2.2rem; border: none; box-shadow: 0 8px 24px var(--accentSoft);
@@ -100,10 +102,13 @@
             margin-top: 10px; box-shadow: 0 4px 15px var(--accentSoft);
         }
 
+        .input-group { margin-bottom: 15px; text-align: left; }
+        .input-label { font-size: 0.85rem; font-weight: 700; color: var(--textSub); margin-bottom: 5px; margin-left: 5px; }
+
         input, select {
             width: 100%; padding: 14px; border-radius: 15px; border: 1.5px solid var(--cardBorder);
             background: var(--inputBg); color: var(--text); font-family: 'Quicksand';
-            font-size: 1rem; box-sizing: border-box; outline: none; margin-bottom: 15px;
+            font-size: 1rem; box-sizing: border-box; outline: none;
         }
 
         .overlay {
@@ -113,7 +118,7 @@
         }
         .modal {
             background: var(--card); width: 100%; max-width: 460px;
-            border-radius: 24px 24px 0 0; padding: 30px 20px 40px; text-align: center;
+            border-radius: 28px 28px 0 0; padding: 30px 20px 40px; text-align: center;
         }
     </style>
 </head>
@@ -127,9 +132,11 @@
 </nav>
 
 <div class="container" id="home-screen">
-    <div class="search-container">
-        <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by name..." oninput="renderEvents()">
+    <div id="birthday-banner" class="banner hidden">
+        <span>🎂</span> <span id="banner-text">Loading birthday vibes...</span>
     </div>
+
+    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search event or name..." oninput="renderEvents()">
     
     <div class="filter-scroll">
         <div class="chip active" onclick="setFilter('All', this)">All</div>
@@ -142,8 +149,8 @@
     <div id="event-list"></div>
     
     <div style="margin-top: 30px; display: flex; gap: 10px;">
-        <button onclick="exportData()" style="flex: 1; padding: 10px; border-radius: 15px; border: 1px solid var(--cardBorder); background: var(--card); font-family: 'Quicksand'; font-size: 0.8rem; font-weight: 700; color: var(--textSub);">💾 Backup Data</button>
-        <button onclick="importData()" style="flex: 1; padding: 10px; border-radius: 15px; border: 1px solid var(--cardBorder); background: var(--card); font-family: 'Quicksand'; font-size: 0.8rem; font-weight: 700; color: var(--textSub);">📂 Restore</button>
+        <button onclick="exportData()" style="flex: 1; padding: 10px; border-radius: 15px; border: 1px solid var(--cardBorder); background: var(--card); font-family: 'Quicksand'; font-size: 0.75rem; font-weight: 700; color: var(--textSub);">💾 Backup</button>
+        <button onclick="importData()" style="flex: 1; padding: 10px; border-radius: 15px; border: 1px solid var(--cardBorder); background: var(--card); font-family: 'Quicksand'; font-size: 0.75rem; font-weight: 700; color: var(--textSub);">📂 Restore</button>
     </div>
 
     <button class="fab" onclick="showAddScreen()">+</button>
@@ -151,16 +158,33 @@
 
 <div class="container hidden" id="add-screen">
     <button onclick="showHomeScreen()" style="background:none; border:none; color:var(--accent); font-weight:700; margin-bottom:20px;">← Back</button>
-    <h2>New Event</h2>
-    <select id="fType">
-        <option value="Marriage">💒 Marriage</option>
-        <option value="Meeting">🤝 Meeting</option>
-        <option value="Birthday">🎂 Birthday</option>
-        <option value="Other">📋 Other</option>
-    </select>
-    <input type="text" id="fName" placeholder="Name (e.g. Thomas)">
-    <input type="date" id="fDate">
-    <input type="text" id="fNote" placeholder="Note (e.g. Bring gift)">
+    <h2 style="margin-top:0;">New Event</h2>
+    
+    <div class="input-group">
+        <div class="input-label">Event Category</div>
+        <select id="fType">
+            <option value="Marriage">💒 Marriage</option>
+            <option value="Meeting">🤝 Meeting</option>
+            <option value="Birthday">🎂 Birthday</option>
+            <option value="Other">📋 Other</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <div class="input-label">Name of Person</div>
+        <input type="text" id="fName" placeholder="e.g. Thomas, Ravi...">
+    </div>
+
+    <div class="input-group">
+        <div class="input-label">Date of Event</div>
+        <input type="date" id="fDate">
+    </div>
+
+    <div class="input-group">
+        <div class="input-label">Extra Note</div>
+        <input type="text" id="fNote" placeholder="e.g. Bring files, formal wear...">
+    </div>
+
     <button class="btn-full" onclick="saveEvent()">✅ Save & Sync Calendar</button>
 </div>
 
@@ -168,9 +192,9 @@
     <div class="modal">
         <h3 id="detail-title"></h3>
         <p id="detail-info" style="color: var(--textSub); white-space: pre-line;"></p>
-        <button class="btn-full" id="whatsapp-btn" style="background: #25D366;">💬 Share to WhatsApp</button>
-        <button class="btn-full" style="background: var(--bg2); color: var(--red);" onclick="triggerDelete()">🗑️ Delete Event</button>
-        <button class="btn-full" style="background: transparent; color: var(--textSub);" onclick="closeDetail()">Close</button>
+        <button class="btn-full" id="whatsapp-btn" style="background: #25D366;">💬 Send WhatsApp Reminder</button>
+        <button class="btn-full" style="background: var(--bg2); color: var(--red); box-shadow:none;" onclick="triggerDelete()">🗑️ Remove Event</button>
+        <button class="btn-full" style="background: transparent; color: var(--textSub); box-shadow:none;" onclick="closeDetail()">Close</button>
     </div>
 </div>
 
@@ -202,7 +226,6 @@
         document.getElementById('fName').value = "";
         document.getElementById('fDate').value = "";
         document.getElementById('fNote').value = "";
-        document.getElementById('fType').value = "Marriage";
         document.getElementById('home-screen').classList.add('hidden');
         document.getElementById('add-screen').classList.remove('hidden');
     }
@@ -229,7 +252,7 @@
         
         const filtered = events.filter(e => {
             const matchesFilter = currentFilter === "All" || e.type === currentFilter;
-            const matchesSearch = e.personName.toLowerCase().includes(searchTerm);
+            const matchesSearch = e.personName.toLowerCase().includes(searchTerm) || e.type.toLowerCase().includes(searchTerm);
             return matchesFilter && matchesSearch;
         });
 
@@ -241,17 +264,30 @@
             card.onclick = () => openDetail(ev);
             
             card.innerHTML = `
-                <div style="font-size:2rem;">${emojis[ev.type]}</div>
+                <div style="font-size:2rem;">${emojis[ev.type] || "📋"}</div>
                 <div style="flex:1;">
-                    <div style="font-weight:800;">${ev.personName}'s ${ev.type}</div>
-                    <div style="font-size:0.8rem; color:var(--textSub);">${new Date(ev.date).toDateString()}</div>
+                    <div style="font-weight:800; font-size:1.05rem;">${ev.personName}'s ${ev.type}</div>
+                    <div style="font-size:0.85rem; color:var(--textSub);">${new Date(ev.date).toDateString()}</div>
                 </div>
-                <div class="badge" style="background:${days<=1? 'var(--red)':'var(--accentSoft)'}; color:${days<=1?'white':'var(--accent)'}">
+                <div style="background:${days<=1? 'var(--red)':'var(--accentSoft)'}; color:${days<=1?'white':'var(--accent)'}; padding:4px 12px; border-radius:50px; font-size:0.75rem; font-weight:700;">
                     ${days === 0 ? 'TODAY' : days === 1 ? 'Tomorrow' : days + 'd'}
                 </div>
             `;
             list.appendChild(card);
         });
+
+        updateBanner();
+    }
+
+    function updateBanner() {
+        const bdayCount = events.filter(e => e.type === "Birthday" && getDaysLeft(e.date) >= 0 && getDaysLeft(e.date) <= 30).length;
+        const banner = document.getElementById('birthday-banner');
+        if (bdayCount > 0) {
+            banner.classList.remove('hidden');
+            document.getElementById('banner-text').innerText = `${bdayCount} birthdays coming up this month!`;
+        } else {
+            banner.classList.add('hidden');
+        }
     }
 
     function openDetail(ev) {
@@ -284,12 +320,10 @@
 
     function exportData() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(events));
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.setAttribute("href",     dataStr);
-        downloadAnchorNode.setAttribute("download", "remind_backup.json");
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        downloadAnchorNode.remove();
+        const a = document.createElement('a');
+        a.setAttribute("href", dataStr);
+        a.setAttribute("download", "remind_backup.json");
+        a.click();
     }
 
     function importData() {
@@ -299,9 +333,8 @@
             const file = e.target.files[0];
             const reader = new FileReader();
             reader.readAsText(file,'UTF-8');
-            reader.onload = readerEvent => {
-                const content = readerEvent.target.result;
-                events = JSON.parse(content);
+            reader.onload = r => {
+                events = JSON.parse(r.target.result);
                 localStorage.setItem(SK, JSON.stringify(events));
                 renderEvents();
             }
