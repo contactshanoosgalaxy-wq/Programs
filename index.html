@@ -2,147 +2,323 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NP | Noushin Programs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Remind Pro 📅</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --cream-bg: #fdfaf5; --glass: rgba(255, 255, 255, 0.9); --accent: #c5a880; --text: #3d3d3d; --error: #e57373; }
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--cream-bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; }
-        .header { padding: 15px; text-align: center; border-bottom: 1px solid rgba(0,0,0,0.05); letter-spacing: 3px; font-size: 0.7rem; font-weight: bold; color: var(--accent); background: white; position: sticky; top: 0; z-index: 100; }
-        #app { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .step, .view { display: none; width: 100%; max-width: 450px; animation: fadeIn 0.2s ease; }
-        .active { display: block; }
-        h1 { font-weight: 300; font-size: 1.3rem; margin-bottom: 1.5rem; text-align: center; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .day-grid { grid-template-columns: repeat(7, 1fr); }
-        button { background: var(--glass); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.3); padding: 15px; border-radius: 12px; cursor: pointer; transition: 0.2s; font-size: 0.9rem; color: var(--text); }
-        button:active { transform: scale(0.98); background: #fff; }
-        .btn-confirm { background: #e9edc9 !important; grid-column: span 3; font-weight: bold; margin-top: 10px; width: 100%; border: none; }
-        .btn-back { background: none; border: none; color: var(--accent); text-decoration: underline; margin-bottom: 20px; font-size: 0.8rem; cursor: pointer; width: fit-content; }
-        input { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #ddd; background: var(--glass); box-sizing: border-box; margin-bottom: 10px; font-size: 1rem; }
-        .event-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid var(--accent); display: flex; justify-content: space-between; align-items: center; text-align: left; }
-        .event-info { flex: 1; margin-right: 10px; }
-        .remark-text { font-size: 0.8rem; color: #777; display: block; margin-top: 4px; font-style: italic; }
-        .delete-btn { color: var(--error); font-size: 0.7rem; cursor: pointer; border: 1px solid var(--error); padding: 8px; border-radius: 5px; min-width: 50px; text-align: center; }
-        .nav-bar { padding: 15px; display: flex; justify-content: space-around; border-top: 1px solid rgba(0,0,0,0.05); background: white; }
-        .nav-btn { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); cursor: pointer; font-weight: bold; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        :root {
+            --bg: #f5f0e8; --bg2: #ede8de; --card: #ffffff; --cardBorder: #e8e0d0;
+            --text: #2c2416; --textSub: #8c7a5e; --textMuted: #c4b89a;
+            --accent: #c27c3a; --accentSoft: rgba(194, 124, 58, 0.12);
+            --green: #5a8a4e; --greenSoft: rgba(90, 138, 78, 0.1);
+            --orange: #b8621a; --red: #c0444a;
+            --shadow: 0 4px 32px rgba(160, 130, 80, 0.15);
+            --inputBg: #faf7f2; --navBg: #f5f0e8ee;
+        }
+
+        .dark-mode {
+            --bg: #0e1117; --bg2: #161b27; --card: #1c2333; --cardBorder: #262f45;
+            --text: #f0f4ff; --textSub: #7a8aaa; --textMuted: #3d4a65;
+            --accent: #4f8ef7; --accentSoft: rgba(79, 142, 247, 0.15);
+            --green: #34d399; --greenSoft: rgba(52, 211, 153, 0.12);
+            --orange: #fb923c; --red: #f87171;
+            --shadow: 0 4px 32px rgba(0, 0, 0, 0.45);
+            --inputBg: #161b27; --navBg: #0e1117ee;
+        }
+
+        body {
+            margin: 0; font-family: 'Quicksand', sans-serif; background: var(--bg);
+            color: var(--text); transition: background 0.3s, color 0.3s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        nav {
+            position: sticky; top: 0; z-index: 100; background: var(--navBg);
+            backdrop-filter: blur(14px); padding: 15px 20px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--cardBorder);
+        }
+
+        .toggle-box {
+            width: 50px; height: 26px; border-radius: 50px; position: relative;
+            cursor: pointer; background: var(--bg2); border: 1.5px solid var(--cardBorder);
+        }
+        .toggle-knob {
+            position: absolute; top: 2.5px; left: 3px; width: 18px; height: 18px;
+            border-radius: 50%; background: var(--accent); transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; font-size: 10px;
+        }
+        .dark-mode .toggle-knob { left: 26px; }
+
+        .container { padding: 20px; max-width: 460px; margin: 0 auto; padding-bottom: 100px; }
+        .hidden { display: none !important; }
+
+        /* SEARCH BAR */
+        .search-container { margin-bottom: 15px; }
+        .search-input {
+            width: 100%; padding: 12px 20px; border-radius: 30px;
+            border: 1.5px solid var(--cardBorder); background: var(--card);
+            color: var(--text); font-family: 'Quicksand'; outline: none; box-sizing: border-box;
+        }
+
+        /* FILTER CHIPS */
+        .filter-scroll {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 15px;
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .filter-scroll::-webkit-scrollbar { display: none; }
+        .chip {
+            padding: 8px 16px; border-radius: 20px; background: var(--card);
+            border: 1.5px solid var(--cardBorder); font-size: 0.85rem; font-weight: 700;
+            white-space: nowrap; cursor: pointer; color: var(--textSub);
+        }
+        .chip.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+        .event-card {
+            background: var(--card); border-radius: 20px; padding: 18px;
+            margin-bottom: 12px; border: 1px solid var(--cardBorder);
+            box-shadow: var(--shadow); display: flex; align-items: center; gap: 15px;
+            animation: slideUp 0.4s ease forwards;
+        }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        .badge { padding: 4px 12px; border-radius: 50px; font-size: 0.75rem; font-weight: 700; }
+
+        .fab {
+            position: fixed; bottom: 30px; right: 24px; width: 60px; height: 60px;
+            border-radius: 50%; background: var(--accent); color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem; border: none; box-shadow: 0 8px 24px var(--accentSoft);
+            cursor: pointer; z-index: 90;
+        }
+
+        .btn-full {
+            width: 100%; padding: 16px; border-radius: 50px; border: none;
+            font-family: 'Quicksand'; font-size: 1rem; font-weight: 700;
+            background: var(--accent); color: white; cursor: pointer;
+            margin-top: 10px; box-shadow: 0 4px 15px var(--accentSoft);
+        }
+
+        input, select {
+            width: 100%; padding: 14px; border-radius: 15px; border: 1.5px solid var(--cardBorder);
+            background: var(--inputBg); color: var(--text); font-family: 'Quicksand';
+            font-size: 1rem; box-sizing: border-box; outline: none; margin-bottom: 15px;
+        }
+
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px); z-index: 200; display: flex;
+            align-items: flex-end; justify-content: center;
+        }
+        .modal {
+            background: var(--card); width: 100%; max-width: 460px;
+            border-radius: 24px 24px 0 0; padding: 30px 20px 40px; text-align: center;
+        }
     </style>
 </head>
 <body>
 
-<div class="header">NP | NOUSHIN PROGRAMS</div>
+<nav>
+    <div style="font-weight: 800;">📅 Remind Pro</div>
+    <div class="toggle-box" onclick="toggleTheme()">
+        <div class="toggle-knob" id="knob">☀️</div>
+    </div>
+</nav>
 
-<div id="app">
-    <div class="step active" id="step1">
-        <h1>Select Event</h1>
-        <div class="grid">
-            <button onclick="nextStep(2, 'event', 'Marriage')">💍 Marriage</button>
-            <button onclick="nextStep(2, 'event', 'Meeting')">💼 Meeting</button>
-            <button onclick="nextStep(2, 'event', 'Function')">🎉 Function</button>
-        </div>
+<div class="container" id="home-screen">
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by name..." oninput="renderEvents()">
+    </div>
+    
+    <div class="filter-scroll">
+        <div class="chip active" onclick="setFilter('All', this)">All</div>
+        <div class="chip" onclick="setFilter('Marriage', this)">💒 Marriage</div>
+        <div class="chip" onclick="setFilter('Meeting', this)">🤝 Meeting</div>
+        <div class="chip" onclick="setFilter('Birthday', this)">🎂 Birthday</div>
+        <div class="chip" onclick="setFilter('Other', this)">📋 Other</div>
     </div>
 
-    <div class="step" id="step2">
-        <div class="btn-back" onclick="showStep(1)">← Change Event</div>
-        <h1>Which Year?</h1>
-        <div class="grid" id="yearGrid"></div>
+    <div id="event-list"></div>
+    
+    <div style="margin-top: 30px; display: flex; gap: 10px;">
+        <button onclick="exportData()" style="flex: 1; padding: 10px; border-radius: 15px; border: 1px solid var(--cardBorder); background: var(--card); font-family: 'Quicksand'; font-size: 0.8rem; font-weight: 700; color: var(--textSub);">💾 Backup Data</button>
+        <button onclick="importData()" style="flex: 1; padding: 10px; border-radius: 15px; border: 1px solid var(--cardBorder); background: var(--card); font-family: 'Quicksand'; font-size: 0.8rem; font-weight: 700; color: var(--textSub);">📂 Restore</button>
     </div>
 
-    <div class="step" id="step3">
-        <div class="btn-back" onclick="showStep(2)">← Change Year</div>
-        <h1>Select Month</h1>
-        <div class="grid" id="monthGrid"></div>
-    </div>
-
-    <div class="step" id="step4">
-        <div class="btn-back" onclick="showStep(3)">← Change Month</div>
-        <h1>Select Date</h1>
-        <div class="grid day-grid" id="dayGrid"></div>
-    </div>
-
-    <div class="step" id="step5">
-        <div class="btn-back" onclick="showStep(4)">← Change Date</div>
-        <h1>What Time?</h1>
-        <div class="grid">
-            <button onclick="handleTime('09:00')">🌅 Morning</button>
-            <button onclick="handleTime('13:00')">☀️ Noon</button>
-            <button onclick="handleTime('18:00')">🌇 Evening</button>
-            <button onclick="handleTime('21:00')">🌙 Night</button>
-            <div style="grid-column: span 3; margin-top: 10px; text-align: center;">
-                <p style="font-size: 0.8rem; margin-bottom: 5px;">Or set exact time:</p>
-                <input type="time" id="exactTime">
-                <button class="btn-confirm" onclick="handleTime(document.getElementById('exactTime').value)">Confirm Time</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="step" id="step6">
-        <div class="btn-back" onclick="showStep(5)">← Change Time</div>
-        <h1>Final Remarks</h1>
-        <input type="text" id="remarkInput" placeholder="e.g. John's Marriage at Balussery...">
-        <button class="btn-confirm" onclick="finalize()">Confirm & Sync 🔔</button>
-    </div>
-
-    <div class="view" id="eventListView">
-        <h1>My Programs</h1>
-        <div id="listContainer"></div>
-        <button class="btn-confirm" onclick="location.reload()">Back to Home</button>
-    </div>
+    <button class="fab" onclick="showAddScreen()">+</button>
 </div>
 
-<div class="nav-bar">
-    <div class="nav-btn" onclick="location.reload()">+ New</div>
-    <div class="nav-btn" onclick="showEvents()">📅 My Programs</div>
+<div class="container hidden" id="add-screen">
+    <button onclick="showHomeScreen()" style="background:none; border:none; color:var(--accent); font-weight:700; margin-bottom:20px;">← Back</button>
+    <h2>New Event</h2>
+    <select id="fType">
+        <option value="Marriage">💒 Marriage</option>
+        <option value="Meeting">🤝 Meeting</option>
+        <option value="Birthday">🎂 Birthday</option>
+        <option value="Other">📋 Other</option>
+    </select>
+    <input type="text" id="fName" placeholder="Name (e.g. Thomas)">
+    <input type="date" id="fDate">
+    <input type="text" id="fNote" placeholder="Note (e.g. Bring gift)">
+    <button class="btn-full" onclick="saveEvent()">✅ Save & Sync Calendar</button>
+</div>
+
+<div class="overlay hidden" id="detail-overlay">
+    <div class="modal">
+        <h3 id="detail-title"></h3>
+        <p id="detail-info" style="color: var(--textSub); white-space: pre-line;"></p>
+        <button class="btn-full" id="whatsapp-btn" style="background: #25D366;">💬 Share to WhatsApp</button>
+        <button class="btn-full" style="background: var(--bg2); color: var(--red);" onclick="triggerDelete()">🗑️ Delete Event</button>
+        <button class="btn-full" style="background: transparent; color: var(--textSub);" onclick="closeDetail()">Close</button>
+    </div>
 </div>
 
 <script>
-    let data = { event: '', year: '', month: '', day: '', time: '', remark: '' };
-    const currentYear = new Date().getFullYear();
-    const yearGrid = document.getElementById('yearGrid');
-    for (let i = 0; i < 3; i++) {
-        let y = currentYear + i;
-        yearGrid.innerHTML += `<button style="grid-column: span 3" onclick="nextStep(3, 'year', ${y})">${y}</button>`;
-    }
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const monthGrid = document.getElementById('monthGrid');
-    months.forEach((m, idx) => { monthGrid.innerHTML += `<button onclick="setupDays(${idx + 1})">${m}</button>`; });
+    const SK = "remind_v4";
+    let events = JSON.parse(localStorage.getItem(SK)) || [];
+    let activeEvent = null;
+    let currentFilter = "All";
 
-    function setupDays(monthNum) {
-        data.month = monthNum;
-        const dayGrid = document.getElementById('dayGrid');
-        dayGrid.innerHTML = '';
-        const daysInMonth = new Date(data.year, monthNum, 0).getDate();
-        for (let d = 1; d <= daysInMonth; d++) { dayGrid.innerHTML += `<button onclick="nextStep(5, 'day', ${d})">${d}</button>`; }
-        showStep(4);
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        document.getElementById('knob').innerText = isDark ? '🌙' : '☀️';
+        localStorage.setItem('remind_theme', isDark ? 'dark' : 'cream');
     }
-    function nextStep(stepNum, key, value) { data[key] = value; showStep(stepNum); }
-    function showStep(num) { document.querySelectorAll('.step, .view').forEach(s => s.classList.remove('active')); document.getElementById('step' + num).classList.add('active'); }
-    function handleTime(timeVal) {
-        if (!timeVal) { alert("Please select a time!"); return; }
-        const selectedDate = new Date(data.year, data.month - 1, data.day, timeVal.split(':')[0], timeVal.split(':')[1]);
-        if (selectedDate < new Date()) { alert("⚠️ Error: You cannot select a date or time in the past!"); return; }
-        data.time = timeVal; showStep(6);
+
+    if (localStorage.getItem('remind_theme') === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.getElementById('knob').innerText = '🌙';
     }
-    function finalize() {
-        data.remark = document.getElementById('remarkInput').value || "No detailed remark";
-        let list = JSON.parse(localStorage.getItem('np_events')) || [];
-        list.push({...data});
-        localStorage.setItem('np_events', JSON.stringify(list));
-        const y = data.year, m = data.month.toString().padStart(2, '0'), d = data.day.toString().padStart(2, '0'), t = data.time.replace(':', '') + "00";
-        const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(data.event + ": " + data.remark)}&dates=${y}${m}${d}T${t}/${y}${m}${d}T${parseInt(t)+10000}&details=${encodeURIComponent(data.remark)}`;
-        window.open(url, '_blank');
-        location.reload(); 
+
+    function showHomeScreen() {
+        document.getElementById('add-screen').classList.add('hidden');
+        document.getElementById('home-screen').classList.remove('hidden');
+        renderEvents();
     }
-    function showEvents() { document.querySelectorAll('.step').forEach(s => s.classList.remove('active')); document.getElementById('eventListView').classList.add('active'); renderList(); }
-    function renderList() {
-        const container = document.getElementById('listContainer');
-        const list = JSON.parse(localStorage.getItem('np_events')) || [];
-        container.innerHTML = list.length ? '' : '<p style="text-align:center; opacity:0.5;">No upcoming programs.</p>';
-        list.forEach((ev, idx) => {
-            container.innerHTML += `<div class="event-card"><div class="event-info"><strong>${ev.event}</strong><br><small>${ev.day}/${ev.month}/${ev.year} at ${ev.time}</small><span class="remark-text">${ev.remark}</span></div><div class="delete-btn" onclick="deleteEvent(${idx})">Delete</div></div>`;
+
+    function showAddScreen() {
+        document.getElementById('fName').value = "";
+        document.getElementById('fDate').value = "";
+        document.getElementById('fNote').value = "";
+        document.getElementById('fType').value = "Marriage";
+        document.getElementById('home-screen').classList.add('hidden');
+        document.getElementById('add-screen').classList.remove('hidden');
+    }
+
+    function setFilter(type, el) {
+        currentFilter = type;
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        renderEvents();
+    }
+
+    function getDaysLeft(dateStr) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const target = new Date(dateStr); target.setHours(0,0,0,0);
+        return Math.ceil((target - today) / 86400000);
+    }
+
+    function renderEvents() {
+        const list = document.getElementById('event-list');
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        list.innerHTML = "";
+        
+        events.sort((a,b) => new Date(a.date) - new Date(b.date));
+        
+        const filtered = events.filter(e => {
+            const matchesFilter = currentFilter === "All" || e.type === currentFilter;
+            const matchesSearch = e.personName.toLowerCase().includes(searchTerm);
+            return matchesFilter && matchesSearch;
+        });
+
+        filtered.forEach(ev => {
+            const days = getDaysLeft(ev.date);
+            const emojis = { "Marriage": "💒", "Meeting": "🤝", "Birthday": "🎂", "Other": "📋" };
+            const card = document.createElement('div');
+            card.className = `event-card`;
+            card.onclick = () => openDetail(ev);
+            
+            card.innerHTML = `
+                <div style="font-size:2rem;">${emojis[ev.type]}</div>
+                <div style="flex:1;">
+                    <div style="font-weight:800;">${ev.personName}'s ${ev.type}</div>
+                    <div style="font-size:0.8rem; color:var(--textSub);">${new Date(ev.date).toDateString()}</div>
+                </div>
+                <div class="badge" style="background:${days<=1? 'var(--red)':'var(--accentSoft)'}; color:${days<=1?'white':'var(--accent)'}">
+                    ${days === 0 ? 'TODAY' : days === 1 ? 'Tomorrow' : days + 'd'}
+                </div>
+            `;
+            list.appendChild(card);
         });
     }
-    function deleteEvent(i) { if (confirm("🚨 Delete from list? (Won't remove from Google Calendar app)")) { let l = JSON.parse(localStorage.getItem('np_events')); l.splice(i, 1); localStorage.setItem('np_events', JSON.stringify(l)); renderList(); } }
+
+    function openDetail(ev) {
+        activeEvent = ev;
+        document.getElementById('detail-overlay').classList.remove('hidden');
+        document.getElementById('detail-title').innerText = `${ev.personName}'s ${ev.type}`;
+        document.getElementById('detail-info').innerText = `${new Date(ev.date).toDateString()}\n${ev.note ? '📝 ' + ev.note : ''}`;
+        
+        const msg = `🔔 Reminder: ${ev.personName}'s ${ev.type} is on ${new Date(ev.date).toDateString()}! ${ev.note ? 'Note: ' + ev.note : ''}`;
+        document.getElementById('whatsapp-btn').onclick = () => window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function saveEvent() {
+        const name = document.getElementById('fName').value;
+        const date = document.getElementById('fDate').value;
+        const type = document.getElementById('fType').value;
+        const note = document.getElementById('fNote').value;
+
+        if (!name || !date) return alert("Please fill Name and Date!");
+
+        events.push({ id: Date.now(), personName: name, date, type, note });
+        localStorage.setItem(SK, JSON.stringify(events));
+
+        const d = date.replace(/-/g,"");
+        const gLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(name+"'s "+type)}&dates=${d}/${d}&details=${encodeURIComponent(note || "")}`;
+        
+        showHomeScreen();
+        window.open(gLink, '_blank');
+    }
+
+    function exportData() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(events));
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.setAttribute("href",     dataStr);
+        downloadAnchorNode.setAttribute("download", "remind_backup.json");
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        downloadAnchorNode.remove();
+    }
+
+    function importData() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.readAsText(file,'UTF-8');
+            reader.onload = readerEvent => {
+                const content = readerEvent.target.result;
+                events = JSON.parse(content);
+                localStorage.setItem(SK, JSON.stringify(events));
+                renderEvents();
+            }
+        }
+        input.click();
+    }
+
+    function triggerDelete() {
+        events = events.filter(e => e.id !== activeEvent.id);
+        localStorage.setItem(SK, JSON.stringify(events));
+        closeDetail();
+        renderEvents();
+    }
+
+    function closeDetail() { document.getElementById('detail-overlay').classList.add('hidden'); }
+
+    renderEvents();
 </script>
 </body>
 </html>
